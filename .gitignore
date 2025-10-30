@@ -1,0 +1,18 @@
+all_original.json
+all.json
+n-1.json
+.env
+docker-compose-M2DATA.yml
+old_api.py
+pb_pg_insertion.txt
+pg_test.py
+postgresql-42.7.8.jar
+read_kafka.py
+spark_kafka_to_pg copy 2.py
+spark_kafka_to_pg copy.py
+vfonctionelle.py
+api_opensky.py
+api_test.py
+credentials.json
+credentials copy.json
+.gitignore

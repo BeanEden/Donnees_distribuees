@@ -1,0 +1,37 @@
+version: "3.9"
+
+services:
+  spark-master:
+    image: apache/spark:3.5.0
+    container_name: spark-master
+    networks:
+      - nifi-kafka-network
+    environment:
+      - SPARK_MASTER_HOST=spark-master
+      - SPARK_LOCAL_IP=spark-master
+    command: ["/bin/bash", "-c", "/opt/spark/sbin/start-master.sh && tail -f /opt/spark/logs/*"]
+    ports:
+      - "7077:7077"
+      - "8080:8080"
+    volumes:
+      - ./spark-apps:/opt/spark/work-dir
+      - ./spark-ivy:/home/spark/.ivy2
+
+  spark-worker:
+    image: apache/spark:3.5.0
+    container_name: spark-worker
+    networks:
+      - nifi-kafka-network
+    depends_on:
+      - spark-master
+    environment:
+      - SPARK_MASTER=spark://spark-master:7077
+      - SPARK_WORKER_WEBUI_PORT=8081
+      - SPARK_LOCAL_IP=spark-worker
+    command: ["/bin/bash","-c","/opt/spark/sbin/start-worker.sh spark://spark-master:7077 && tail -f /opt/spark/logs/*"]
+    ports:
+      - "8081:8081"
+
+networks:
+  nifi-kafka-network:
+    external: true

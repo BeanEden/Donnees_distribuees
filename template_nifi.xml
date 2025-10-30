@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<template>
+    <groupId>nifi-flow</groupId>
+    <artifactId>OpenSkyPipeline</artifactId>
+    <version>1.0</version>
+    <description>Pipeline NiFi pour ingestion OpenSky JSON → Kafka</description>
+    <processors>
+
+        <!-- 1. GetFile -->
+        <processor>
+            <id>getfile</id>
+            <name>GetFile</name>
+            <class>org.apache.nifi.processors.standard.GetFile</class>
+            <properties>
+                <property>
+                    <name>Input Directory</name>
+                    <value>/data/opensky/raw</value>
+                </property>
+                <property>
+                    <name>Keep Source File</name>
+                    <value>false</value>
+                </property>
+            </properties>
+        </processor>
+
+        <!-- 2. SplitJson -->
+        <processor>
+            <id>splitjson</id>
+            <name>SplitJson</name>
+            <class>org.apache.nifi.processors.standard.SplitJson</class>
+            <properties>
+                <property>
+                    <name>JsonPath Expression</name>
+                    <value>$.states[*]</value>
+                </property>
+                <property>
+                    <name>Null Value Representation</name>
+                    <value>empty string</value>
+                </property>
+                <property>
+                    <name>Max String Length</name>
+                    <value>20 MB</value>
+                </propert
