@@ -12,7 +12,6 @@ spark_kafka_to_pg copy 2.py
 spark_kafka_to_pg copy.py
 vfonctionelle.py
 api_opensky.py
-api_test.py
 credentials.json
-credentials copy.json
+"credentials copy.json"
 .gitignore
