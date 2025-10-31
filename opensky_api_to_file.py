@@ -80,26 +80,31 @@ def generate_from_previous(prev_data, current_data):
 
     for i, state in enumerate(curr_states):
         if i >= len(prev_states):
-            new_states.append(state)
-            continue
+            s_new = state.copy()
+        else:
+            s_prev = prev_states[i]
+            s_curr = state.copy()
+            s_new = s_curr.copy()
 
-        s_prev = prev_states[i]
-        s_curr = state.copy()
-        s_new = s_curr.copy()
+            for j, val in enumerate(s_curr):
+                try:
+                    if isinstance(val, (int, float)) and isinstance(s_prev[j], (int, float)):
+                        s_new[j] = (s_curr[j] - s_prev[j]) + s_curr[j]
+                    elif isinstance(val, bool):
+                        s_new[j] = val
+                    elif isinstance(val, str):
+                        s_new[j] = val
+                except Exception:
+                    continue
 
-        for j, val in enumerate(s_curr):
-            try:
-                if isinstance(val, (int, float)) and isinstance(s_prev[j], (int, float)):
-                    # Calcul d’évolution logique
-                    s_new[j] = (s_curr[j] - s_prev[j]) + s_curr[j]
-                elif isinstance(val, bool):
-                    s_new[j] = val
-                elif isinstance(val, str):
-                    s_new[j] = val
-            except Exception:
-                continue
+        # 🔄 Correction des booléens
+        # on_ground = index 8, spi = index 17
+        if len(s_new) > 8:
+            s_new[8] = bool(s_new[8])
+        if len(s_new) > 17:
+            s_new[17] = bool(s_new[17])
 
-        # Mise à jour des timestamps (indices 3 et 4 si valides)
+        # 🕒 Mise à jour des timestamps
         if len(s_new) > 3:
             s_new[3] = current_time
         if len(s_new) > 4:
@@ -110,6 +115,7 @@ def generate_from_previous(prev_data, current_data):
     new_data = {"time": current_time, "states": new_states}
     df = pd.DataFrame(new_states)
     return new_data, df
+
 
 # === BOUCLE PRINCIPALE ===
 if __name__ == "__main__":
