@@ -1,13 +1,16 @@
 version: '3.1'
 
 services:
-
+  #ZOOKEEPER
   zookeeper:
     image: wurstmeister/zookeeper
     container_name: zookeeper
     ports:
       - "2181:2181"
+    networks:
+      - bigdata-net
 
+  #KAFKA
   kafka:
     image: wurstmeister/kafka
     container_name: kafka
@@ -19,8 +22,67 @@ services:
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
       KAFKA_BROKER_ID: 1
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_MESSAGE_MAX_BYTES: 524288000 
+      KAFKA_MESSAGE_MAX_BYTES: 524288000
       KAFKA_REPLICA_FETCH_MAX_BYTES: 524288000
-
     depends_on:
       - zookeeper
+    networks:
+      - bigdata-net
+
+
+  # SPARK MASTER
+  spark-master:
+    image: apache/spark:3.5.0
+    container_name: spark-master
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master --host spark-master
+    ports:
+      - "7077:7077"
+      - "8081:8080"
+    networks:
+      - bigdata-net
+
+  # SPARK WORKER
+  spark-worker:
+    image: apache/spark:3.5.0
+    container_name: spark-worker
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
+    depends_on:
+      - spark-master
+    networks:
+      - bigdata-net
+
+  #POSTGRESQL
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: mydb
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+    networks:
+      - bigdata-net
+
+  #GRAFANA
+  grafana:
+    image: grafana/grafana-enterprise:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - postgres
+    volumes:
+      - ./grafana_data:/var/lib/grafana
+    networks:
+      - bigdata-net
+
+#Réseau commun
+networks:
+  bigdata-net:
+    driver: bridge
